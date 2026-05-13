@@ -1,0 +1,18 @@
+{
+  "nav": {
+    "about": "About Us",
+    "ministry": "Ministry Updates",
+    "prayer": "Missionary Prayer",
+    "giving": "Giving",
+    "contact": "Contact Us"
+  },
+  "header": {
+    "search": "Search",
+    "login": "Admin Login",
+    "language": "中文"
+  },
+  "footer": {
+    "prayer": "Become a Prayer Partner",
+    "rights": "© 2026 USA Care Ministries International"
+  }
+}
