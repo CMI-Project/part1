@@ -57,7 +57,7 @@ export function HeroSliderClient({ slides }: { slides: SlideData[] }) {
   const secondaryLabel = locale === 'zh' ? slide.ctaSecondary.labelZh : slide.ctaSecondary.labelEn
 
   return (
-    <section className="relative w-full h-screen overflow-hidden">
+    <section className="relative w-full overflow-hidden" style={{ height: 'calc(100vh - 118px)', minHeight: '480px', maxHeight: '680px' }}>
       {/* All slides stacked — cross-fade via opacity transition */}
       {slides.map((s, i) => (
         <div
@@ -140,24 +140,6 @@ export function HeroSliderClient({ slides }: { slides: SlideData[] }) {
         </div>
       </div>
 
-      {/* Prev Button */}
-      <button
-        onClick={goToPrev}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 text-white bg-black/30 hover:bg-black/60 hover:text-yellow-400 rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200 backdrop-blur-sm"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft size={24} />
-      </button>
-
-      {/* Next Button */}
-      <button
-        onClick={goToNext}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 text-white bg-black/30 hover:bg-black/60 hover:text-yellow-400 rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200 backdrop-blur-sm"
-        aria-label="Next slide"
-      >
-        <ChevronRight size={24} />
-      </button>
-
       {/* Dot Navigation */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex gap-3 items-center">
         {slides.map((_, index) => (
@@ -175,13 +157,6 @@ export function HeroSliderClient({ slides }: { slides: SlideData[] }) {
         ))}
       </div>
 
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-8 right-8 z-20 text-white/60 text-xs flex flex-col items-center gap-1">
-        <ChevronDown size={18} className="animate-bounce" />
-        <span style={{ fontFamily: locale === 'zh' ? 'var(--font-chinese)' : 'var(--font-body)' }}>
-          {locale === 'en' ? 'Scroll' : '滾動'}
-        </span>
-      </div>
     </section>
   )
 }

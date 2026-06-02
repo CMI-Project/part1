@@ -122,19 +122,6 @@ export default async function HomePage() {
       {/* ── 1. Hero Slider ── */}
       <HeroSlider />
 
-      {/* ── 2. Mission Statement Bar ── */}
-      <div
-        className="py-5 text-center px-4"
-        style={{ backgroundColor: '#1A1A2E' }}
-      >
-        <p
-          className="text-white/75 text-sm md:text-base italic max-w-2xl mx-auto tracking-wide"
-          style={{ fontFamily: font(isZh) }}
-        >
-          {isZh ? missionZh : missionEn}
-        </p>
-      </div>
-
       {/* ── 3. About Section ── */}
       <section className="py-20 px-4" style={{ backgroundColor: '#fafaf9' }}>
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-14 items-center">

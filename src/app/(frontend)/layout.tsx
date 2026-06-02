@@ -86,7 +86,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Providers>
             <AdminBar adminBarProps={{ preview: isEnabled }} />
             <Header />
-            <PrayerPartnerBanner locale={locale} />
             {children}
             <Footer />
           </Providers>
