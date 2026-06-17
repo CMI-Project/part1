@@ -6,6 +6,7 @@ import { getPayload, type RequiredDataFromCollectionSlug } from 'payload'
 import { draftMode } from 'next/headers'
 import React, { cache } from 'react'
 import { homeStatic } from '@/endpoints/seed/home-static'
+import { getLocale } from 'next-intl/server'
 
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
@@ -83,11 +84,25 @@ export default async function Page({ params: paramsPromise }: Args) {
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { slug = 'home' } = await paramsPromise
   const decodedSlug = decodeURIComponent(slug)
-  const page = await queryPageBySlug({
-    slug: decodedSlug,
-  })
+  const locale = await getLocale()
+  const isZh = locale === 'zh'
 
-  return generateMeta({ doc: page })
+  const page = await queryPageBySlug({ slug: decodedSlug })
+
+  // Prefer bilingual title if set, fall back to generic title for meta
+  const bilingualTitle = page
+    ? (isZh
+        ? ((page as any).titleZh || (page as any).titleEn || page.title)
+        : ((page as any).titleEn || page.title))
+    : undefined
+
+  const baseMeta = await generateMeta({ doc: page })
+
+  if (bilingualTitle && baseMeta) {
+    return { ...baseMeta, title: bilingualTitle }
+  }
+
+  return baseMeta
 }
 
 const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {

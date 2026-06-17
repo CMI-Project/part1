@@ -3,11 +3,26 @@ import { EventsCarousel } from '@/components/EventsCarousel'
 import { GivingButtons } from '@/components/GivingButtons'
 import { getLocale } from 'next-intl/server'
 import Link from 'next/link'
-import { Globe, Heart, ArrowRight, MapPin } from 'lucide-react'
+import { Globe, Heart, ArrowRight, MapPin, BookOpen, Users, Star } from 'lucide-react'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'
 import type { Event, SiteSetting } from '@/payload-types'
+
+const getRegions = unstable_cache(
+  async () => {
+    const payload = await getPayload({ config: configPromise })
+    const { docs } = await payload.find({
+      collection: 'regions',
+      sort: 'order',
+      limit: 10,
+      depth: 0,
+    })
+    return docs as any[]
+  },
+  ['regions-homepage'],
+  { tags: ['regions'] },
+)
 
 const getFeaturedEvents = unstable_cache(
   async () => {
@@ -15,7 +30,7 @@ const getFeaturedEvents = unstable_cache(
     const { docs } = await payload.find({
       collection: 'events',
       where: { isFeatured: { equals: true }, isActive: { equals: true } },
-      sort: 'date',
+      sort: 'order date',
       limit: 6,
       depth: 1,
     })
@@ -38,9 +53,10 @@ export default async function HomePage() {
   const locale = await getLocale()
   const isZh = locale === 'zh'
 
-  const [featuredEvents, siteSettings] = await Promise.all([
+  const [featuredEvents, siteSettings, cmsRegions] = await Promise.all([
     getFeaturedEvents().catch(() => [] as Event[]),
     getSiteSettings().catch(() => null as SiteSetting | null),
+    getRegions().catch(() => [] as any[]),
   ])
 
   const aboutTitleEn = siteSettings?.whoWeAre_title_en ?? 'Care Ministries International'
@@ -53,7 +69,8 @@ export default async function HomePage() {
   const titleFont = (zh: boolean) =>
     zh ? 'var(--font-chinese)' : 'var(--font-display)'
 
-  const ministries = [
+  // Hardcoded fallback — used until admins add regions via Payload admin
+  const fallbackMinistries = [
     {
       region: isZh ? '亞洲事工' : 'Asia',
       countries: isZh ? '柬埔寨 · 印尼 · 台灣' : 'Cambodia · Indonesia · Taiwan',
@@ -83,9 +100,34 @@ export default async function HomePage() {
     },
   ]
 
-  const involvement = [
+  // Map CMS regions to display shape; fall back to hardcoded if CMS is empty
+  const ministries = cmsRegions.length > 0
+    ? cmsRegions.map((r) => ({
+        region: isZh ? (r.nameZh || r.nameEn) : r.nameEn,
+        countries: isZh ? (r.countriesZh || r.countriesEn || '') : (r.countriesEn || ''),
+        href: `/${locale}${r.href.startsWith('/') ? r.href : `/${r.href}`}`,
+        color: r.color || '#1E40AF',
+        desc: isZh ? (r.descriptionZh || r.descriptionEn || '') : (r.descriptionEn || ''),
+      }))
+    : fallbackMinistries
+
+  // Icon resolver for CMS-managed involvement cards
+  const iconNode = (key: string, size = 32) => {
+    const props = { size, strokeWidth: 1.5 }
+    switch (key) {
+      case 'globe':  return <Globe  {...props} />
+      case 'mappin': return <MapPin {...props} />
+      case 'book':   return <BookOpen {...props} />
+      case 'users':  return <Users  {...props} />
+      case 'star':   return <Star   {...props} />
+      default:       return <Heart  {...props} />
+    }
+  }
+
+  // Hardcoded fallback cards — used until admins populate SiteSettings → Get Involved Cards
+  const fallbackInvolvement = [
     {
-      icon: <Heart size={32} strokeWidth={1.5} />,
+      icon: iconNode('heart'),
       title: isZh ? '奉獻支持' : 'Give',
       desc: isZh
         ? '您的奉獻直接支持宣教士在世界各地的日常事工與差旅需要。'
@@ -95,7 +137,7 @@ export default async function HomePage() {
       cta: isZh ? '立即奉獻' : 'Donate Now',
     },
     {
-      icon: <Globe size={32} strokeWidth={1.5} />,
+      icon: iconNode('globe'),
       title: isZh ? '禱告同行' : 'Pray',
       desc: isZh
         ? '成為我們的禱告夥伴，定期為宣教士和宣教地區的需要代禱。'
@@ -105,16 +147,31 @@ export default async function HomePage() {
       cta: isZh ? '加入禱告' : 'Join Prayer',
     },
     {
-      icon: <MapPin size={32} strokeWidth={1.5} />,
+      icon: iconNode('mappin'),
       title: isZh ? '回應差遣' : 'Go',
       desc: isZh
         ? '回應神的呼召，參加宣教訓練課程，踏上宣教工場。'
-        : 'Respond to God\'s call, join our training programs, and step out to the mission field.',
+        : "Respond to God's call, join our training programs, and step out to the mission field.",
       href: `/${locale}/mobilization`,
       color: '#1E40AF',
       cta: isZh ? '了解培訓' : 'Explore Training',
     },
   ]
+
+  type InvolvementCard = { icon: React.ReactNode; title: string; desc: string; href: string; color: string; cta: string }
+
+  // Map CMS cards to display shape; fall back to hardcoded if none defined
+  const cmsCards = (siteSettings as any)?.getInvolvedCards ?? []
+  const involvement: InvolvementCard[] = cmsCards.length > 0
+    ? cmsCards.map((c: any) => ({
+        icon: iconNode(c.icon ?? 'heart'),
+        title: isZh ? (c.titleZh || c.titleEn) : c.titleEn,
+        desc: isZh ? (c.descriptionZh || c.descriptionEn || '') : (c.descriptionEn || ''),
+        href: `/${locale}${c.href?.startsWith('/') ? c.href : `/${c.href ?? ''}`}`,
+        color: c.color || '#D4A017',
+        cta: isZh ? (c.ctaZh || c.ctaEn || '了解更多') : (c.ctaEn || 'Learn More'),
+      }))
+    : fallbackInvolvement
 
   return (
     <main className="flex flex-col">

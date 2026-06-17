@@ -9,7 +9,7 @@ export const Events: CollectionConfig = {
   admin: {
     useAsTitle: 'titleEn',
     description: 'Manage CMI events and conferences',
-    defaultColumns: ['titleEn', 'date', 'location_en', 'isFeatured', 'isActive'],
+    defaultColumns: ['titleEn', 'date', 'location_en', 'isFeatured', 'order', 'isActive'],
   },
   access: {
     read: anyone,
@@ -123,6 +123,16 @@ export const Events: CollectionConfig = {
           admin: { width: '50%', position: 'sidebar' },
         },
       ],
+    },
+    {
+      name: 'order',
+      label: 'Display Order',
+      type: 'number',
+      defaultValue: 10,
+      admin: {
+        description: 'Lower number = appears first in homepage carousel. Use multiples of 10 so you can insert items between.',
+        position: 'sidebar',
+      },
     },
   ],
   timestamps: true,

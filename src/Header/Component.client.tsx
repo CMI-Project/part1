@@ -6,6 +6,28 @@ import { useTranslations, useLocale } from 'next-intl'
 import { Search, Menu, X, Plus, Minus, Globe, ChevronDown } from 'lucide-react'
 import type { Header } from '@/payload-types'
 
+// ─── Types matching the new Header CMS config ────────────────────────────────
+interface CmsSubSubItem {
+  labelEn: string
+  labelZh: string
+  url: string
+  openInNewTab?: boolean
+}
+interface CmsSubItem {
+  labelEn: string
+  labelZh: string
+  url: string
+  openInNewTab?: boolean
+  submenu?: CmsSubSubItem[]
+}
+interface CmsNavItem {
+  labelEn: string
+  labelZh: string
+  url: string
+  openInNewTab?: boolean
+  submenu?: CmsSubItem[]
+}
+
 interface HeaderClientProps {
   data: Header
 }
@@ -48,7 +70,16 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
     }
   }
 
-  const navItems = [
+  // Prepend /{locale} to internal paths; leave external URLs and /admin untouched
+  const buildHref = (url: string) => {
+    if (!url) return `/${locale}`
+    if (url.startsWith('http') || url.startsWith('//') || url === '/admin') return url
+    if (url.startsWith(`/${locale}/`) || url === `/${locale}`) return url
+    return `/${locale}${url.startsWith('/') ? url : `/${url}`}`
+  }
+
+  // Hardcoded fallback — used when the CMS Header global has no items yet
+  const fallbackNav = [
     {
       label: t('nav.about'),
       href: `/${locale}/about`,
@@ -126,6 +157,28 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
       ],
     },
   ]
+
+  // Convert CMS nav items (new labelEn/labelZh format) to internal shape
+  const cmsRaw = ((data as any).navItems ?? []) as CmsNavItem[]
+  const hasCmsNav = cmsRaw.length > 0 && 'labelEn' in cmsRaw[0]
+
+  const cmsNav = cmsRaw.map((item) => ({
+    label: isZh ? item.labelZh : item.labelEn,
+    href: buildHref(item.url),
+    external: item.openInNewTab,
+    submenu: (item.submenu ?? []).map((sub) => ({
+      label: isZh ? sub.labelZh : sub.labelEn,
+      href: buildHref(sub.url),
+      external: sub.openInNewTab,
+      submenu: (sub.submenu ?? []).map((ss) => ({
+        label: isZh ? ss.labelZh : ss.labelEn,
+        href: buildHref(ss.url),
+        external: ss.openInNewTab,
+      })),
+    })),
+  }))
+
+  const navItems = hasCmsNav ? cmsNav : fallbackNav
 
   const isActive = (href: string) => {
     if (href.startsWith('http')) return false

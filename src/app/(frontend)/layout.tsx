@@ -10,10 +10,12 @@ import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { draftMode } from 'next/headers'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getLocale } from 'next-intl/server'
-import { PrayerPartnerBanner } from '@/components/PrayerPartnerBanner'
 import { Playfair_Display, Open_Sans, Noto_Sans_TC } from 'next/font/google'
 import './globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
+import { ChatWidget } from '@/components/ChatWidget'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale()
@@ -70,6 +72,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const locale = await getLocale()
   const messages = await getMessages()
 
+  // Fetch ChatConfig for the widget (non-blocking — widget just won't show if it fails)
+  let chatConfig: any = null
+  try {
+    const payload = await getPayload({ config: configPromise })
+    chatConfig = await payload.findGlobal({ slug: 'chat-config', depth: 0 })
+  } catch { /* chatbot silently disabled if config fetch fails */ }
+
+  const chatEnabled        = chatConfig?.isEnabled !== false
+  const welcomeMessageEn   = chatConfig?.welcomeMessageEn
+  const welcomeMessageZh   = chatConfig?.welcomeMessageZh
+
   return (
     <html
       className={cn(playfair.variable, openSans.variable, notoSansTC.variable)}
@@ -88,6 +101,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Header />
             {children}
             <Footer />
+            {chatEnabled && (
+              <ChatWidget
+                locale={locale}
+                welcomeMessageEn={welcomeMessageEn}
+                welcomeMessageZh={welcomeMessageZh}
+              />
+            )}
           </Providers>
         </NextIntlClientProvider>
       </body>

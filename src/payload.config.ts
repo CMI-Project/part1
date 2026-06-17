@@ -13,10 +13,15 @@ import { Events } from './collections/Events'
 import { Missionaries } from './collections/Missionaries'
 import { RegionalUpdates } from './collections/RegionalUpdates'
 import { PrayerRequests } from './collections/PrayerRequests'
+import { Regions } from './collections/Regions'
+import { FaithStatements } from './collections/FaithStatements'
+import { TrainingCourses } from './collections/TrainingCourses'
+import { seedCmiPages } from './endpoints/seed/cmi-pages'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { SiteSettings } from './globals/SiteSettings'
 import { FooterContent } from './globals/FooterContent'
+import { ChatConfig } from './globals/ChatConfig'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -79,9 +84,30 @@ export default buildConfig({
     Missionaries,
     RegionalUpdates,
     PrayerRequests,
+    Regions,
+    FaithStatements,
+    TrainingCourses,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer, SiteSettings, FooterContent],
+  globals: [Header, Footer, SiteSettings, FooterContent, ChatConfig],
+  endpoints: [
+    {
+      path: '/seed-cmi-pages',
+      method: 'post',
+      handler: async (req) => {
+        // Require an authenticated admin session
+        if (!req.user) {
+          return Response.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+        try {
+          const result = await seedCmiPages({ payload: req.payload, req })
+          return Response.json({ ok: true, ...result })
+        } catch (err: any) {
+          return Response.json({ error: err?.message ?? 'Seed failed' }, { status: 500 })
+        }
+      },
+    },
+  ],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,

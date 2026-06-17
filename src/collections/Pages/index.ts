@@ -7,6 +7,9 @@ import { CallToAction } from '../../blocks/CallToAction/config'
 import { Content } from '../../blocks/Content/config'
 import { FormBlock } from '../../blocks/Form/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
+import { CmiHeroBlock } from '../../blocks/CmiHeroBlock/config'
+import { CmiTextBlock } from '../../blocks/CmiTextBlock/config'
+import { CmiImageBlock } from '../../blocks/CmiImageBlock/config'
 import { hero } from '@/heros/config'
 import { slugField } from 'payload'
 import { populatePublishedAt } from '../../hooks/populatePublishedAt'
@@ -59,6 +62,25 @@ export const Pages: CollectionConfig<'pages'> = {
       name: 'title',
       type: 'text',
       required: true,
+      admin: { description: 'Internal admin label. Use titleEn/titleZh for bilingual frontend titles.' },
+    },
+    // Bilingual title fields — used by the frontend to show the correct language
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'titleEn',
+          label: 'Page Title (English)',
+          type: 'text',
+          admin: { width: '50%', description: 'Shown on the page for English visitors' },
+        },
+        {
+          name: 'titleZh',
+          label: '頁面標題 (Chinese)',
+          type: 'text',
+          admin: { width: '50%', description: '中文訪客看到的標題' },
+        },
+      ],
     },
     {
       type: 'tabs',
@@ -72,7 +94,7 @@ export const Pages: CollectionConfig<'pages'> = {
             {
               name: 'layout',
               type: 'blocks',
-              blocks: [CallToAction, Content, MediaBlock, Archive, FormBlock],
+              blocks: [CmiHeroBlock, CmiTextBlock, CmiImageBlock, CallToAction, Content, MediaBlock, Archive, FormBlock],
               required: true,
               admin: {
                 initCollapsed: true,

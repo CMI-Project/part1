@@ -203,6 +203,121 @@ export const SiteSettings: GlobalConfig = {
       ],
     },
 
+    // ── Get Involved Cards ────────────────────────────────────
+    {
+      type: 'collapsible',
+      label: 'Get Involved Cards (Homepage)',
+      admin: {
+        description: 'The three "Give / Pray / Go" cards shown on the homepage. Leave empty to use defaults.',
+      },
+      fields: [
+        {
+          name: 'getInvolvedCards',
+          label: 'Cards',
+          type: 'array',
+          maxRows: 6,
+          admin: {
+            description: 'Add up to 6 cards. Leave empty to use the built-in Give / Pray / Go defaults.',
+            initCollapsed: true,
+          },
+          fields: [
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'titleEn',
+                  label: 'Title (English)',
+                  type: 'text',
+                  required: true,
+                  admin: { width: '50%' },
+                },
+                {
+                  name: 'titleZh',
+                  label: '標題 (Chinese)',
+                  type: 'text',
+                  required: true,
+                  admin: { width: '50%' },
+                },
+              ],
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'descriptionEn',
+                  label: 'Description (English)',
+                  type: 'textarea',
+                  admin: { width: '50%' },
+                },
+                {
+                  name: 'descriptionZh',
+                  label: '描述 (Chinese)',
+                  type: 'textarea',
+                  admin: { width: '50%' },
+                },
+              ],
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'ctaEn',
+                  label: 'Button Label (English)',
+                  type: 'text',
+                  admin: { width: '50%' },
+                },
+                {
+                  name: 'ctaZh',
+                  label: '按鈕文字 (Chinese)',
+                  type: 'text',
+                  admin: { width: '50%' },
+                },
+              ],
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'href',
+                  label: 'Link URL',
+                  type: 'text',
+                  required: true,
+                  admin: {
+                    width: '50%',
+                    description: 'e.g. /giving  (locale prefix added automatically)',
+                  },
+                },
+                {
+                  name: 'icon',
+                  label: 'Icon',
+                  type: 'select',
+                  defaultValue: 'heart',
+                  options: [
+                    { label: 'Heart (Give)', value: 'heart' },
+                    { label: 'Globe (Pray)', value: 'globe' },
+                    { label: 'Map Pin (Go)', value: 'mappin' },
+                    { label: 'Book Open', value: 'book' },
+                    { label: 'Users', value: 'users' },
+                    { label: 'Star', value: 'star' },
+                  ],
+                  admin: { width: '50%' },
+                },
+              ],
+            },
+            {
+              name: 'color',
+              label: 'Accent Color (hex)',
+              type: 'text',
+              defaultValue: '#D4A017',
+              admin: {
+                description: '#D4A017 = gold, #6B21A8 = purple, #1E40AF = blue',
+              },
+            },
+          ],
+        },
+      ],
+    },
+
     // ── Giving ────────────────────────────────────────────────
     {
       type: 'collapsible',

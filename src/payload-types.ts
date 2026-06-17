@@ -77,6 +77,9 @@ export interface Config {
     missionaries: Missionary;
     'regional-updates': RegionalUpdate;
     'prayer-requests': PrayerRequest;
+    regions: Region;
+    'faith-statements': FaithStatement;
+    'training-courses': TrainingCourse;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -104,6 +107,9 @@ export interface Config {
     missionaries: MissionariesSelect<false> | MissionariesSelect<true>;
     'regional-updates': RegionalUpdatesSelect<false> | RegionalUpdatesSelect<true>;
     'prayer-requests': PrayerRequestsSelect<false> | PrayerRequestsSelect<true>;
+    regions: RegionsSelect<false> | RegionsSelect<true>;
+    'faith-statements': FaithStatementsSelect<false> | FaithStatementsSelect<true>;
+    'training-courses': TrainingCoursesSelect<false> | TrainingCoursesSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -124,12 +130,14 @@ export interface Config {
     footer: Footer;
     'site-settings': SiteSetting;
     'footer-content': FooterContent;
+    'chat-config': ChatConfig;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     'footer-content': FooterContentSelect<false> | FooterContentSelect<true>;
+    'chat-config': ChatConfigSelect<false> | ChatConfigSelect<true>;
   };
   locale: null;
   widgets: {
@@ -171,7 +179,18 @@ export interface UserAuthOperations {
  */
 export interface Page {
   id: string;
+  /**
+   * Internal admin label. Use titleEn/titleZh for bilingual frontend titles.
+   */
   title: string;
+  /**
+   * Shown on the page for English visitors
+   */
+  titleEn?: string | null;
+  /**
+   * 中文訪客看到的標題
+   */
+  titleZh?: string | null;
   hero: {
     type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
     richText?: {
@@ -215,7 +234,16 @@ export interface Page {
       | null;
     media?: (string | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  layout: (
+    | CmiHeroBlock
+    | CmiTextBlock
+    | CmiImageBlock
+    | CallToActionBlock
+    | ContentBlock
+    | MediaBlock
+    | ArchiveBlock
+    | FormBlock
+  )[];
   meta?: {
     title?: string | null;
     /**
@@ -456,6 +484,76 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CmiHeroBlock".
+ */
+export interface CmiHeroBlock {
+  titleEn: string;
+  titleZh: string;
+  subtitleEn?: string | null;
+  subtitleZh?: string | null;
+  backgroundImage?: (string | null) | Media;
+  style?: ('dark' | 'light' | 'image') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'cmiHero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CmiTextBlock".
+ */
+export interface CmiTextBlock {
+  headingEn?: string | null;
+  headingZh?: string | null;
+  contentEn?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  contentZh?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  layout?: ('full' | 'narrow' | 'two-col') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'cmiText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CmiImageBlock".
+ */
+export interface CmiImageBlock {
+  image: string | Media;
+  captionEn?: string | null;
+  captionZh?: string | null;
+  size?: ('small' | 'medium' | 'full') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'cmiImage';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -903,6 +1001,10 @@ export interface Event {
   registrationLink?: string | null;
   isFeatured?: boolean | null;
   isActive?: boolean | null;
+  /**
+   * Lower number = appears first in homepage carousel. Use multiples of 10 so you can insert items between.
+   */
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1076,6 +1178,97 @@ export interface PrayerRequest {
    * Check when staff has responded to this request
    */
   isFollowedUp?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Regional ministry cards shown on the homepage. Add/edit/reorder without touching code.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "regions".
+ */
+export interface Region {
+  id: string;
+  nameEn: string;
+  nameZh: string;
+  /**
+   * e.g. Cambodia · Indonesia · Taiwan
+   */
+  countriesEn?: string | null;
+  /**
+   * 例如：柬埔寨 · 印尼 · 台灣
+   */
+  countriesZh?: string | null;
+  descriptionEn?: string | null;
+  descriptionZh?: string | null;
+  /**
+   * Optional hero image for the region card
+   */
+  image?: (string | null) | Media;
+  /**
+   * e.g. /regional/asia  (locale prefix added automatically)
+   */
+  href: string;
+  /**
+   * #1E40AF = blue, #6B21A8 = purple, #D4A017 = gold, #16A34A = green
+   */
+  color?: string | null;
+  /**
+   * Lower number = appears first on homepage. Use multiples of 10 (10, 20, 30…) so you can insert items later.
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Statement of Faith articles shown on the About → Statement of Faith page.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faith-statements".
+ */
+export interface FaithStatement {
+  id: string;
+  titleEn: string;
+  titleZh: string;
+  bodyEn: string;
+  bodyZh: string;
+  /**
+   * Lower = appears first. Use multiples of 10 (10, 20, 30…).
+   */
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Training courses shown on the Mobilization → Training Courses page.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "training-courses".
+ */
+export interface TrainingCourse {
+  id: string;
+  titleEn: string;
+  titleZh: string;
+  descriptionEn?: string | null;
+  descriptionZh?: string | null;
+  level: 'foundations' | 'advanced' | 'intensive';
+  /**
+   * e.g. "6 weeks" / "6週"
+   */
+  duration?: string | null;
+  /**
+   * 例如：6週、12週、2週密集
+   */
+  durationZh?: string | null;
+  /**
+   * Optional link (e.g. /contact or an external form URL)
+   */
+  href?: string | null;
+  image?: (string | null) | Media;
+  /**
+   * Lower = appears first. Use multiples of 10.
+   */
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1310,6 +1503,18 @@ export interface PayloadLockedDocument {
         value: string | PrayerRequest;
       } | null)
     | ({
+        relationTo: 'regions';
+        value: string | Region;
+      } | null)
+    | ({
+        relationTo: 'faith-statements';
+        value: string | FaithStatement;
+      } | null)
+    | ({
+        relationTo: 'training-courses';
+        value: string | TrainingCourse;
+      } | null)
+    | ({
         relationTo: 'redirects';
         value: string | Redirect;
       } | null)
@@ -1377,6 +1582,8 @@ export interface PayloadMigration {
  */
 export interface PagesSelect<T extends boolean = true> {
   title?: T;
+  titleEn?: T;
+  titleZh?: T;
   hero?:
     | T
     | {
@@ -1402,6 +1609,9 @@ export interface PagesSelect<T extends boolean = true> {
   layout?:
     | T
     | {
+        cmiHero?: T | CmiHeroBlockSelect<T>;
+        cmiText?: T | CmiTextBlockSelect<T>;
+        cmiImage?: T | CmiImageBlockSelect<T>;
         cta?: T | CallToActionBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
@@ -1421,6 +1631,45 @@ export interface PagesSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CmiHeroBlock_select".
+ */
+export interface CmiHeroBlockSelect<T extends boolean = true> {
+  titleEn?: T;
+  titleZh?: T;
+  subtitleEn?: T;
+  subtitleZh?: T;
+  backgroundImage?: T;
+  style?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CmiTextBlock_select".
+ */
+export interface CmiTextBlockSelect<T extends boolean = true> {
+  headingEn?: T;
+  headingZh?: T;
+  contentEn?: T;
+  contentZh?: T;
+  layout?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CmiImageBlock_select".
+ */
+export interface CmiImageBlockSelect<T extends boolean = true> {
+  image?: T;
+  captionEn?: T;
+  captionZh?: T;
+  size?: T;
+  id?: T;
+  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1722,6 +1971,7 @@ export interface EventsSelect<T extends boolean = true> {
   registrationLink?: T;
   isFeatured?: T;
   isActive?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1771,6 +2021,55 @@ export interface PrayerRequestsSelect<T extends boolean = true> {
   message?: T;
   locale?: T;
   isFollowedUp?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "regions_select".
+ */
+export interface RegionsSelect<T extends boolean = true> {
+  nameEn?: T;
+  nameZh?: T;
+  countriesEn?: T;
+  countriesZh?: T;
+  descriptionEn?: T;
+  descriptionZh?: T;
+  image?: T;
+  href?: T;
+  color?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faith-statements_select".
+ */
+export interface FaithStatementsSelect<T extends boolean = true> {
+  titleEn?: T;
+  titleZh?: T;
+  bodyEn?: T;
+  bodyZh?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "training-courses_select".
+ */
+export interface TrainingCoursesSelect<T extends boolean = true> {
+  titleEn?: T;
+  titleZh?: T;
+  descriptionEn?: T;
+  descriptionZh?: T;
+  level?: T;
+  duration?: T;
+  durationZh?: T;
+  href?: T;
+  image?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2050,28 +2349,43 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Manage the site navigation. URLs starting with / are internal (locale prefix added automatically). External URLs start with https://
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header".
  */
 export interface Header {
   id: string;
+  /**
+   * Top-level menu tabs. Each can have a submenu.
+   */
   navItems?:
     | {
-        link: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: string | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: string | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-        };
+        labelEn: string;
+        labelZh: string;
+        /**
+         * e.g. /about  or  https://cmigo.org
+         */
+        url: string;
+        openInNewTab?: boolean | null;
+        submenu?:
+          | {
+              labelEn: string;
+              labelZh: string;
+              url: string;
+              openInNewTab?: boolean | null;
+              submenu?:
+                | {
+                    labelEn: string;
+                    labelZh: string;
+                    url: string;
+                    openInNewTab?: boolean | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -2162,6 +2476,29 @@ export interface SiteSetting {
   facebookUrl?: string | null;
   youtubeUrl?: string | null;
   instagramUrl?: string | null;
+  /**
+   * Add up to 6 cards. Leave empty to use the built-in Give / Pray / Go defaults.
+   */
+  getInvolvedCards?:
+    | {
+        titleEn: string;
+        titleZh: string;
+        descriptionEn?: string | null;
+        descriptionZh?: string | null;
+        ctaEn?: string | null;
+        ctaZh?: string | null;
+        /**
+         * e.g. /giving  (locale prefix added automatically)
+         */
+        href: string;
+        icon?: ('heart' | 'globe' | 'mappin' | 'book' | 'users' | 'star') | null;
+        /**
+         * #D4A017 = gold, #6B21A8 = purple, #1E40AF = blue
+         */
+        color?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   zelleInfo_en?: string | null;
   zelleInfo_zh?: string | null;
   paypalLink?: string | null;
@@ -2225,6 +2562,27 @@ export interface FooterContent {
   createdAt?: string | null;
 }
 /**
+ * Configure the AI chatbot widget shown on every page.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-config".
+ */
+export interface ChatConfig {
+  id: string;
+  /**
+   * Uncheck to hide the chat bubble from the entire site.
+   */
+  isEnabled?: boolean | null;
+  welcomeMessageEn?: string | null;
+  welcomeMessageZh?: string | null;
+  /**
+   * Additional instructions merged into the AI system prompt. E.g. "Always mention our upcoming summer conference." Leave empty to use defaults.
+   */
+  systemPromptExtra?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -2232,14 +2590,27 @@ export interface HeaderSelect<T extends boolean = true> {
   navItems?:
     | T
     | {
-        link?:
+        labelEn?: T;
+        labelZh?: T;
+        url?: T;
+        openInNewTab?: T;
+        submenu?:
           | T
           | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
+              labelEn?: T;
+              labelZh?: T;
               url?: T;
-              label?: T;
+              openInNewTab?: T;
+              submenu?:
+                | T
+                | {
+                    labelEn?: T;
+                    labelZh?: T;
+                    url?: T;
+                    openInNewTab?: T;
+                    id?: T;
+                  };
+              id?: T;
             };
         id?: T;
       };
@@ -2294,6 +2665,20 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   facebookUrl?: T;
   youtubeUrl?: T;
   instagramUrl?: T;
+  getInvolvedCards?:
+    | T
+    | {
+        titleEn?: T;
+        titleZh?: T;
+        descriptionEn?: T;
+        descriptionZh?: T;
+        ctaEn?: T;
+        ctaZh?: T;
+        href?: T;
+        icon?: T;
+        color?: T;
+        id?: T;
+      };
   zelleInfo_en?: T;
   zelleInfo_zh?: T;
   paypalLink?: T;
@@ -2320,6 +2705,19 @@ export interface FooterContentSelect<T extends boolean = true> {
         href?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-config_select".
+ */
+export interface ChatConfigSelect<T extends boolean = true> {
+  isEnabled?: T;
+  welcomeMessageEn?: T;
+  welcomeMessageZh?: T;
+  systemPromptExtra?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
